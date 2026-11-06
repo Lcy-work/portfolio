@@ -20,8 +20,44 @@ medical-insurance/
 │   ├── health-manager/          # 医保管理端
 │   ├── hospital-manager/        # 医院端
 │   └── reimbursement-manager/   # 报销端
+├── sql/                          # 建库建表脚本（12 张表）
 └── docs/                          # 数据库设计文档
 ```
+
+## 运行
+
+### 环境要求
+- JDK 8、Maven 3.6+
+- MySQL 8.0
+- Node.js 16+（前端）
+
+### 1. 初始化数据库
+导入 `sql/schema.sql`（已含建库 + 12 张表）：
+```bash
+mysql -uroot -p < sql/schema.sql
+```
+
+### 2. 启动后端（端口 8081）
+```bash
+cd backend
+# 按需修改 src/main/resources/application.properties 中的数据库账号密码
+#   spring.datasource.username=root
+#   spring.datasource.password=改成你自己的密码
+#   spring.datasource.url=jdbc:mysql://localhost:3306/health_insurance
+mvn spring-boot:run
+```
+启动类 `com.cqupt.health_insurance.HealthInsuranceApplication`。
+
+> 三个前端已在源码里把 `baseURL` 写死为 `http://localhost:8081`，所以后端端口固定 8081，不要改。
+
+### 3. 启动前端（三个独立模块）
+前端 baseURL 已指向后端 8081，无需配置代理，分别启动即可：
+```bash
+cd frontend/health-manager          && npm install && npm run serve
+cd frontend/hospital-manager        && npm install && npm run serve
+cd frontend/reimbursement-manager   && npm install && npm run serve
+```
+默认端口 8080；同时启动多个时 vue-cli 会自动顺延（8081 已被后端占用，可手动指定：`npm run serve -- --port 8082`）。
 
 ## 体现的工程规范
 
