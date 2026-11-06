@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 训练运行时产物（如需提交权重请手动移除本行或改用 Release）
+runs/

@@ -1,0 +1,15 @@
+# Java
+target/
+*.class
+.idea/
+*.iml
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 大数据产物
+*.jar
+*.log

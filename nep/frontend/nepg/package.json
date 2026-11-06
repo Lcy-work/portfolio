@@ -1,0 +1,19 @@
+{
+  "name": "nepg-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd nepg && npm run dev",
+    "build": "cd nepg && npm run build",
+    "preview": "cd nepg && npm run preview"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.17.0",
+    "echarts": "^6.1.0",
+    "element-plus": "^2.14.2",
+    "font-awesome": "^4.7.0",
+    "vue-router": "^5.1.0",
+    "vuex": "^4.1.0"
+  }
+}

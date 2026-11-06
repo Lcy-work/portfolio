@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.mapper.AqiFeedbackMapper">
+
+    <!-- 抽取公用查询字段 -->
+    <sql id="aqiFeedbackSqlSelect">
+        af.af_id,
+        af.tel_id,
+        af.province_id,
+        af.city_id,
+        af.address,
+        af.information,
+        af.estimated_grade,
+        af.af_date,
+        af.af_time,
+        af.gm_id,
+        af.assign_date,
+        af.assign_time,
+        af.state,
+        af.remarks,
+
+        gm.gm_id gm_gm_id,
+        gm.gm_name gm_gm_name,
+        gm.gm_code gm_gm_code,
+        gm.password gm_password,
+        gm.province_id gm_province_id,
+        gm.city_id gm_city_id,
+        gm.tel gm_tel,
+        gm.state gm_state,
+
+        su.tel_id su_tel_id,
+        su.password su_password,
+        su.real_name su_real_name,
+        su.birthday su_birthday,
+        su.sex    su_sex,
+
+        gp.province_id    gp_province_id,
+        gp.province_name  gp_province_name,
+        gp.province_abbr  gp_province_abbr,
+
+        gc.city_id     gc_city_id,
+        gc.city_name   gc_city_name,
+        gc.province_id gc_province_id,
+
+        aq.aqi_id            aq_aqi_id,
+        aq.chinese_explain aq_chinese_explain,
+        aq.color           aq_color,
+        aq.aqi_explain     aq_aqi_explain,
+        aq.health_impact   aq_health_impact,
+        aq.take_steps      aq_take_steps,
+        aq.so2_min         aq_so2_min,
+        aq.so2_max         aq_so2_max,
+        aq.co_min          aq_co_min,
+        aq.co_max          aq_co_max,
+        aq.spm_min         aq_spm_min,
+        aq.spm_max         aq_spm_max
+    </sql>
+
+    <!-- 结果映射 -->
+    <resultMap id="aqiFeedbackResultMap" type="com.cqupt.pojo.AqiFeedback">
+        <id column="af_id" property="afId"/>
+        <result column="tel_id" property="telId"/>
+        <result column="province_id" property="provinceId"/>
+        <result column="city_id" property="cityId"/>
+        <result column="address" property="address"/>
+        <result column="information" property="information"/>
+        <result column="estimated_grade" property="estimatedGrade"/>
+        <result column="af_date" property="afDate"/>
+        <result column="af_time" property="afTime"/>
+        <result column="gm_id" property="gmId"/>
+        <result column="assign_date" property="assignDate"/>
+        <result column="assign_time" property="assignTime"/>
+        <result column="state" property="state"/>
+        <result column="remarks" property="remarks"/>
+
+        <association property="gridMember" javaType="com.cqupt.pojo.GridMember">
+            <id column="gm_gm_id" property="gmId"/>
+            <result column="gm_gm_name" property="gmName"/>
+            <result column="gm_gm_code" property="gmCode"/>
+            <result column="gm_password" property="password"/>
+            <result column="gm_province_id" property="provinceId"/>
+            <result column="gm_city_id" property="cityId"/>
+            <result column="gm_tel" property="tel"/>
+            <result column="gm_state" property="state"/>
+        </association>
+        <association property="supervisor" javaType="com.cqupt.pojo.Supervisor">
+            <id column="su_tel_id" property="telId"/>
+            <result column="su_password" property="password"/>
+            <result column="su_real_name" property="realName"/>
+            <result column="su_birthday" property="birthday"/>
+            <result column="su_sex" property="sex"/>
+        </association>
+        <association property="gridProvince" javaType="com.cqupt.pojo.GridProvince">
+            <id column="gp_province_id" property="provinceId"/>
+            <result column="gp_province_name" property="provinceName"/>
+            <result column="gp_province_abbr" property="provinceAbbr"/>
+        </association>
+        <association property="gridCity" javaType="com.cqupt.pojo.GridCity">
+            <id column="gc_city_id" property="cityId"/>
+            <result column="gc_city_name" property="cityName"/>
+            <result column="gc_province_id" property="provinceId"/>
+        </association>
+        <association property="aqi" javaType="com.cqupt.pojo.Aqi">
+            <id column="aq_aqi_id" property="aqiId"/>
+            <result column="aq_chinese_explain" property="chineseExplain"/>
+            <result column="aq_color" property="color"/>
+            <result column="aq_aqi_explain" property="aqiExplain"/>
+            <result column="aq_health_impact" property="healthImpact"/>
+            <result column="aq_take_steps" property="takeSteps"/>
+            <result column="aq_so2_min" property="so2Min"/>
+            <result column="aq_so2_max" property="so2Max"/>
+            <result column="aq_co_min" property="coMin"/>
+            <result column="aq_co_max" property="coMax"/>
+            <result column="aq_spm_min" property="spmMin"/>
+            <result column="aq_spm_max" property="spmMax"/>
+        </association>
+    </resultMap>
+
+    <!-- 根据网格员ID+状态查询 -->
+    <select id="listAqiFeedbackByGmId" parameterType="com.cqupt.pojo.AqiFeedback" resultMap="aqiFeedbackResultMap">
+        select
+        <include refid="aqiFeedbackSqlSelect"/>
+        from aqi_feedback af
+        left join grid_member gm on af.gm_id = gm.gm_id
+        inner join supervisor su on af.tel_id = su.tel_id
+        inner join grid_province gp on af.province_id = gp.province_id
+        inner join grid_city gc on af.city_id = gc.city_id
+        left join aqi aq on af.estimated_grade = aq.aqi_id
+        <where>
+            <if test="gmId != null">
+                AND af.gm_id = #{gmId}
+            </if>
+            <if test="state != null">
+                AND af.state = #{state}
+            </if>
+        </where>
+        order by af.af_date desc,af.af_time desc
+    </select>
+
+    <!-- 根据主键afId单查详情 -->
+    <select id="getAqiFeedbackById" parameterType="Integer" resultMap="aqiFeedbackResultMap">
+        select
+        <include refid="aqiFeedbackSqlSelect"/>
+        from aqi_feedback af
+        left join grid_member gm on af.gm_id = gm.gm_id
+        inner join supervisor su on af.tel_id = su.tel_id
+        inner join grid_province gp on af.province_id = gp.province_id
+        inner join grid_city gc on af.city_id = gc.city_id
+        left join aqi aq on af.estimated_grade = aq.aqi_id
+        where af.af_id = #{afId}
+    </select>
+
+    <!-- 根据监督员手机号查询反馈列表（监督员查看自己提交的反馈） -->
+    <select id="listAqiFeedbackByTelId" parameterType="string" resultMap="aqiFeedbackResultMap">
+        select
+        <include refid="aqiFeedbackSqlSelect"/>
+        from aqi_feedback af
+        left join grid_member gm on af.gm_id = gm.gm_id
+        inner join supervisor su on af.tel_id = su.tel_id
+        inner join grid_province gp on af.province_id = gp.province_id
+        inner join grid_city gc on af.city_id = gc.city_id
+        left join aqi aq on af.estimated_grade = aq.aqi_id
+        where af.tel_id = #{telId}
+        order by af.af_date desc, af.af_time desc
+    </select>
+
+    <!-- nepm 分页查询：统计符合条件的总记录数 -->
+    <select id="getAqiFeedbackCount" resultType="int">
+        SELECT COUNT(1)
+        FROM aqi_feedback af
+        <where>
+            <if test="provinceId != null">AND af.province_id = #{provinceId}</if>
+            <if test="cityId != null">AND af.city_id = #{cityId}</if>
+            <if test="estimatedGrade != null">AND af.estimated_grade = #{estimatedGrade}</if>
+            <if test="afDate != null and afDate != ''">AND af.af_date LIKE CONCAT('%', #{afDate}, '%')</if>
+            <if test="state != null">AND af.state = #{state}</if>
+        </where>
+    </select>
+
+    <!-- nepm 分页查询：带条件的分页列表 -->
+    <select id="listAqiFeedbackPage" resultMap="aqiFeedbackResultMap">
+        select
+        <include refid="aqiFeedbackSqlSelect"/>
+        from aqi_feedback af
+        left join grid_member gm on af.gm_id = gm.gm_id
+        inner join supervisor su on af.tel_id = su.tel_id
+        inner join grid_province gp on af.province_id = gp.province_id
+        inner join grid_city gc on af.city_id = gc.city_id
+        left join aqi aq on af.estimated_grade = aq.aqi_id
+        <where>
+            <if test="provinceId != null">AND af.province_id = #{provinceId}</if>
+            <if test="cityId != null">AND af.city_id = #{cityId}</if>
+            <if test="estimatedGrade != null">AND af.estimated_grade = #{estimatedGrade}</if>
+            <if test="afDate != null and afDate != ''">AND af.af_date LIKE CONCAT('%', #{afDate}, '%')</if>
+            <if test="state != null">AND af.state = #{state}</if>
+        </where>
+        ORDER BY af.af_date DESC, af.af_time DESC
+        LIMIT #{beginNum}, #{maxPageNum}
+    </select>
+
+    <!-- 查询所有反馈列表（管理员/决策者查看全量数据） -->
+    <select id="listAqiFeedbackAll" resultMap="aqiFeedbackResultMap">
+        select
+        <include refid="aqiFeedbackSqlSelect"/>
+        from aqi_feedback af
+        left join grid_member gm on af.gm_id = gm.gm_id
+        inner join supervisor su on af.tel_id = su.tel_id
+        inner join grid_province gp on af.province_id = gp.province_id
+        inner join grid_city gc on af.city_id = gc.city_id
+        left join aqi aq on af.estimated_grade = aq.aqi_id
+        order by af.af_date desc, af.af_time desc
+    </select>
+
+</mapper>

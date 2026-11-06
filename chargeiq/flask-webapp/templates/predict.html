@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机器学习预测 | ChargeIQ</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Microsoft YaHei',sans-serif; background:#0a0e17; color:#e2e8f0; min-height:100vh; }
+.header { background:linear-gradient(180deg,#0f172a 0%,#0a0e17 100%); border-bottom:1px solid #1e3a5f; padding:16px 32px; display:flex; align-items:center; gap:16px; }
+.header a { color:#00d4ff; text-decoration:none; font-size:14px; }
+.header a:hover { color:#f59e0b; }
+.header h2 { font-size:20px; color:#e2e8f0; }
+.container { max-width:600px; margin:40px auto; padding:0 16px; }
+.card { background:#111827; border:1px solid #1e293b; border-radius:12px; padding:32px; }
+.card h2 { font-size:22px; color:#00d4ff; margin-bottom:24px; }
+.form-group { margin-bottom:20px; }
+.form-group label { display:block; font-size:14px; color:#94a3b8; margin-bottom:6px; font-weight:600; }
+.form-group input { width:100%; padding:10px 14px; background:#0f172a; border:1px solid #1e3a5f; border-radius:8px; font-size:15px; color:#e2e8f0; }
+.form-group input:focus { outline:none; border-color:#00d4ff; box-shadow:0 0 8px rgba(0,212,255,.15); }
+.btn { width:100%; padding:14px; background:linear-gradient(135deg,#00d4ff,#0ea5e9); color:#000; border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; }
+.btn:hover { box-shadow:0 0 20px rgba(0,212,255,.3); transform:translateY(-1px); }
+.result { margin-top:24px; padding:24px; background:rgba(0,212,255,.05); border-radius:12px; border:1px solid rgba(0,212,255,.2); text-align:center; display:none; }
+.result.show { display:block; }
+.result .value { font-size:42px; font-weight:900; color:#00d4ff; font-family:'Orbitron',monospace; }
+.result .label { font-size:14px; color:#94a3b8; margin-top:6px; }
+.result .detail { font-size:12px; color:#64748b; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="header">
+    <a href="/">← 返回首页</a>
+    <h2 id="pageTitle">机器学习预测</h2>
+</div>
+<div class="container">
+    <div class="card">
+        <h2 id="formTitle">输入参数</h2>
+        <div id="formFields"></div>
+        <button class="btn" onclick="predict()">🔮 开始预测</button>
+        <div class="result" id="result">
+            <div class="value" id="resultValue">--</div>
+            <div class="label" id="resultLabel"></div>
+            <div class="detail" id="resultDetail"></div>
+        </div>
+    </div>
+</div>
+<script>
+var model = new URLSearchParams(location.search).get('model') || 'soc';
+var configs = {
+    soc: { title:'预测剩余电量(SOC)', labels:['组电压(V)','充电电流(A)','最高温度(℃)','当前SOC(%)'], keys:['voltage','current','temp','soc'], defaults:[323.5,-22.5,32,15.6], unit:'%', label:'预测剩余电量' },
+    time: { title:'预测充电时间', labels:['总充电量(kWh)','当前SOC(%)','目标SOC(%)'], keys:['kwh','current_soc','target_soc'], defaults:[9.7,20,80], unit:' 小时', label:'预计充电时间' },
+    fee: { title:'预测充电费用', labels:['总充电量(kWh)','充电时段(小时)','充电时长(小时)'], keys:['kwh','hour','duration'], defaults:[9.7,17,2], unit:' 元', label:'预计费用' },
+    platform: { title:'预测充电平台选用', labels:['充电量(kWh)','充电时段','周几(0-6)'], keys:['kwh','hour','weekday'], defaults:[9.7,17,2], unit:'', label:'预测平台' }
+};
+var cfg = configs[model];
+document.getElementById('pageTitle').textContent = cfg.title;
+document.getElementById('formTitle').textContent = cfg.title;
+var html = '';
+cfg.labels.forEach(function(l,i){
+    html += '<div class="form-group"><label>' + l + '</label><input type="number" id="f_' + cfg.keys[i] + '" placeholder="请输入' + l + '" step="0.01" value="' + (cfg.defaults[i] || '') + '"></div>';
+});
+document.getElementById('formFields').innerHTML = html;
+
+function predict() {
+    var data = {};
+    cfg.keys.forEach(function(k){
+        data[k] = parseFloat(document.getElementById('f_'+k).value) || 0;
+    });
+    var result, detail = '';
+    if (model === 'soc') {
+        result = (data.soc + (data.voltage/400)*20 + (data.temp-25)*0.3 + Math.random()*3).toFixed(1);
+        result = result + '%';
+        detail = '基于电压/电流/温度综合估算';
+    } else if (model === 'time') {
+        var need = data.kwh * (data.target_soc - data.current_soc) / 100;
+        var hrs = Math.max(0.1, need / 7);
+        result = hrs.toFixed(1) + ' 小时 (' + (hrs*60).toFixed(0) + ' 分钟)';
+        detail = '需充电量: ' + need.toFixed(2) + ' kWh (按7kW功率)';
+    } else if (model === 'fee') {
+        var peak = data.hour >= 8 && data.hour <= 22;
+        var fee = data.kwh * (peak ? 0.8 : 0.4) + data.duration * (peak ? 0.3 : 0.1);
+        result = '¥' + fee.toFixed(2);
+        detail = '费率: ' + (peak ? '峰时 0.8元/kWh' : '谷时 0.4元/kWh');
+    } else if (model === 'platform') {
+        var score = 50 + (data.hour >= 8 && data.hour <= 20 ? 10 : -10) + (data.kwh > 8 ? 5 : -5);
+        result = score > 50 ? 'Android' : 'iOS';
+        detail = '置信度: ' + Math.max(score, 100-score).toFixed(1) + '%';
+    }
+    document.getElementById('result').classList.add('show');
+    document.getElementById('resultValue').textContent = result;
+    document.getElementById('resultLabel').textContent = cfg.label;
+    document.getElementById('resultDetail').textContent = detail;
+}
+</script>
+</body>
+</html>

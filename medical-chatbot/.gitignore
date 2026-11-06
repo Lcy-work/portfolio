@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Vue / Node
+node_modules/
+dist/
+
+# 密钥：真实 key 绝不提交
+.env

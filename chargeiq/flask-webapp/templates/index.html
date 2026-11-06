@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChargeIQ | 新能源充电桩大数据平台</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+:root {
+  --bg: #0a0e17; --card: #111827; --border: #1e293b;
+  --primary: #00d4ff; --accent: #f59e0b; --text: #e2e8f0; --sub: #94a3b8;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Microsoft YaHei',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.header { background:linear-gradient(180deg,#0f172a 0%,#0a0e17 100%); border-bottom:1px solid #1e3a5f; padding:20px 32px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.header .logo { font-family:'Orbitron',monospace; font-size:24px; color:var(--primary); text-shadow:0 0 20px rgba(0,212,255,.3); }
+.header .logo span { color:var(--accent); }
+.header .info { font-size:12px; color:var(--sub); text-align:right; }
+.container { max-width:1300px; margin:20px auto; padding:0 16px; }
+.section-title { font-size:18px; font-weight:700; margin:28px 0 16px; color:var(--primary); border-left:3px solid var(--primary); padding-left:12px; display:flex; align-items:center; gap:8px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:14px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:22px; cursor:pointer; transition:all .25s; text-decoration:none; color:inherit; display:block; position:relative; overflow:hidden; }
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:transparent; transition:background .25s; }
+.card.analysis::before { background:var(--primary); }
+.card.predict::before { background:var(--accent); }
+.card:hover { transform:translateY(-3px); border-color:var(--primary); box-shadow:0 0 24px rgba(0,212,255,.1); }
+.card .icon { font-size:28px; margin-bottom:10px; }
+.card h3 { font-size:15px; margin-bottom:6px; color:var(--text); }
+.card p { font-size:12px; color:var(--sub); line-height:1.4; }
+.card .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; margin-top:8px; }
+.badge-ml { background:rgba(245,158,11,.15); color:var(--accent); }
+.badge-mr { background:rgba(0,212,255,.15); color:var(--primary); }
+.monitor-btn { display:inline-block; margin-top:16px; padding:12px 28px; background:linear-gradient(135deg,#00d4ff,#0ea5e9); color:#000; font-weight:700; border-radius:8px; text-decoration:none; font-size:14px; }
+.footer { text-align:center; padding:20px; color:#475569; font-size:11px; border-top:1px solid var(--border); margin-top:32px; }
+.footer span { color:var(--primary); }
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:18px; text-align:center; }
+.stat .num { font-size:28px; font-weight:800; color:var(--primary); font-family:'Orbitron',monospace; }
+.stat .label { font-size:12px; color:var(--sub); margin-top:4px; }
+@media (max-width:640px) { .header { flex-direction:column; text-align:center; } .stats-row { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo">Charge<span>IQ</span></div>
+    <div style="color:var(--sub);font-size:12px;margin-top:2px;">新能源充电桩大数据智能分析平台</div>
+  </div>
+  <div class="info">
+    基于 Hadoop + MapReduce + Flask + ML<br>
+    东软教育科技集团 · 2024<br>
+    刘晨宇 2023214527 | 周泓旭 2023214447 | 张亚逊 2023214618<br>
+    刘哲 2023214639 | 刘宇威 2020214911
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats-row" id="overview"></div>
+
+  <div style="text-align:center;margin:8px 0 20px;">
+    <a href="/monitor" class="monitor-btn">📡 进入实时监控大屏</a>
+  </div>
+
+  <div class="section-title">📊 数据分析与可视化</div>
+  <div class="grid">
+    <a href="/dashboard?view=v1" class="card analysis">
+      <div class="icon">📈</div><h3>1. 平均组电压与充电电流</h3>
+      <p>按小时统计电池组电压(V)和充电电流(A)的平均值</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+    <a href="/dashboard?view=v2" class="card analysis">
+      <div class="icon">🔋</div><h3>2. 最高/最低单体电压</h3>
+      <p>全局分析电池单体电压的极值情况</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+    <a href="/dashboard?view=v3" class="card analysis">
+      <div class="icon">📉</div><h3>3. 每时电池平均SOC</h3>
+      <p>按小时聚合电池荷电状态(SOC)平均值</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+    <a href="/dashboard?view=v4" class="card analysis">
+      <div class="icon">🕐</div><h3>4. 充电时间与次数频率</h3>
+      <p>统计各时段充电次数与频率占比</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+    <a href="/dashboard?view=v5" class="card analysis">
+      <div class="icon">📊</div><h3>5. 充电时间分布</h3>
+      <p>按充电时长分段统计充电会话分布</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+    <a href="/dashboard?view=v6" class="card analysis">
+      <div class="icon">⚡</div><h3>6. 平均充电速率</h3>
+      <p>按小时统计平均充电速率(kW/h)</p>
+      <span class="badge badge-mr">MapReduce</span>
+    </a>
+  </div>
+
+  <div class="section-title">🤖 机器学习预测引擎</div>
+  <div class="grid">
+    <a href="/predict?model=soc" class="card predict">
+      <div class="icon">🔮</div><h3>7. 预测剩余电量(SOC)</h3>
+      <p>基于电压/电流/温度特征预测电池剩余电量</p>
+      <span class="badge badge-ml">ML 回归</span>
+    </a>
+    <a href="/predict?model=time" class="card predict">
+      <div class="icon">⏱️</div><h3>8. 预测充电时间</h3>
+      <p>根据电池状态预测所需充电时长</p>
+      <span class="badge badge-ml">ML 回归</span>
+    </a>
+    <a href="/predict?model=fee" class="card predict">
+      <div class="icon">💰</div><h3>9. 预测充电费用</h3>
+      <p>基于充电量和时段预测充电费用</p>
+      <span class="badge badge-ml">ML 回归</span>
+    </a>
+    <a href="/predict?model=platform" class="card predict">
+      <div class="icon">📱</div><h3>10. 预测充电平台选用</h3>
+      <p>根据用户行为预测充电平台选择</p>
+      <span class="badge badge-ml">ML 分类</span>
+    </a>
+  </div>
+</div>
+
+<div class="footer">
+  ChargeIQ &copy; 2024 | <span>Hadoop</span> + <span>MapReduce</span> + <span>Flask</span> + <span>scikit-learn</span><br>
+  小组成员：刘晨宇 2023214527 &nbsp;|&nbsp; 周泓旭 2023214447 &nbsp;|&nbsp; 张亚逊 2023214618 &nbsp;|&nbsp; 刘哲 2023214639 &nbsp;|&nbsp; 刘宇威 2020214911
+</div>
+
+<script>
+fetch('/api/v7/performance_index').then(r=>r.json()).then(d=>{
+  var s=d.reduce((a,x)=>a+parseInt(x.session_count),0);
+  var k=d.reduce((a,x)=>a+parseFloat(x.total_kwh),0).toFixed(0);
+  var f=d.reduce((a,x)=>a+parseFloat(x.total_fees),0).toFixed(0);
+  document.getElementById('overview').innerHTML=
+    '<div class="stat"><div class="num">'+d.length+'</div><div class="label">充电站数量</div></div>'+
+    '<div class="stat"><div class="num">'+s+'</div><div class="label">充电会话总数</div></div>'+
+    '<div class="stat"><div class="num">'+k+'</div><div class="label">总充电量(kWh)</div></div>'+
+    '<div class="stat"><div class="num">&yen;'+f+'</div><div class="label">总充电费用</div></div>';
+});
+</script>
+</body>
+</html>

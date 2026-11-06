@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实时监控大屏 | ChargeIQ</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei',sans-serif;background:#0a0e17;color:#e2e8f0;overflow:hidden}
+.header{background:linear-gradient(180deg,#0f172a,#0a0e17);border-bottom:1px solid #1e3a5f;padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+.header .title{font-family:'Orbitron',monospace;font-size:22px;color:#00d4ff;text-shadow:0 0 20px rgba(0,212,255,.3)}
+.header .time{font-size:14px;color:#94a3b8}
+.header a{color:#00d4ff;text-decoration:none;font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:8px;padding:8px;height:calc(100vh - 56px)}
+.panel{background:#111827;border:1px solid #1e293b;border-radius:8px;padding:12px;position:relative}
+.panel h3{font-size:13px;color:#00d4ff;margin-bottom:8px;text-align:center}
+.chart{width:100%;height:calc(100% - 28px)}
+.big-num{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.big-num .val{font-size:48px;font-weight:900;font-family:'Orbitron',monospace;color:#f59e0b}
+.big-num .lbl{font-size:13px;color:#94a3b8;margin-top:4px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.dot{display:inline-block;width:8px;height:8px;background:#10b981;border-radius:50%;margin-right:6px;animation:pulse 2s infinite}
+</style>
+</head>
+<body>
+<div class="header">
+  <div><div class="title">ChargeIQ <span style="font-size:14px;color:#94a3b8">| 实时监控大屏</span></div></div>
+  <div class="time" id="clock"></div>
+  <a href="/">← 返回主页</a>
+</div>
+<div class="grid">
+  <div class="panel"><h3>📈 实时充电功率 (kW)</h3><div class="chart" id="c1"></div></div>
+  <div class="panel"><h3>🔋 各站SOC水平 (%)</h3><div class="chart" id="c2"></div></div>
+  <div class="panel"><div class="big-num"><div class="val" id="totalSession">--</div><div class="lbl"><span class="dot"></span>今日充电会话数</div></div></div>
+  <div class="panel"><h3>💰 今日充电费用 (元)</h3><div class="chart" id="c3"></div></div>
+  <div class="panel"><h3>🕐 充电时长分布</h3><div class="chart" id="c4"></div></div>
+  <div class="panel"><h3>🌡️ 电池温度分布 (°C)</h3><div class="chart" id="c5"></div></div>
+</div>
+<script>
+function clock(){var n=new Date();document.getElementById('clock').textContent=n.toLocaleString('zh-CN');}
+setInterval(clock,1000);clock();
+
+function rand(n,m){return (Math.random()*(m-n)+n).toFixed(1)}
+// Chart 1: real-time power
+var c1=echarts.init(document.getElementById('c1'));
+c1.setOption({grid:{top:10,right:10,bottom:20,left:40},xAxis:{type:'category',data:['00','02','04','06','08','10','12','14','16','18','20','22'],axisLabel:{color:'#94a3b8',fontSize:10}},yAxis:{type:'value',axisLabel:{color:'#94a3b8',fontSize:10}},series:[{data:Array.from({length:12},()=>rand(30,120)),type:'line',smooth:true,lineStyle:{color:'#00d4ff',width:2},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(0,212,255,.3)'},{offset:1,color:'rgba(0,212,255,0)'}]}},symbol:'none'}]});
+
+// Chart 2: SOC levels
+var c2=echarts.init(document.getElementById('c2'));
+c2.setOption({grid:{top:10,right:10,bottom:20,left:40},xAxis:{type:'category',data:['站A','站B','站C','站D','站E','站F'],axisLabel:{color:'#94a3b8',fontSize:10}},yAxis:{type:'value',min:0,max:100,axisLabel:{color:'#94a3b8',fontSize:10}},series:[{data:Array.from({length:6},()=>rand(45,95)),type:'bar',itemStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'#00d4ff'},{offset:1,color:'#0ea5e9'}]}},barWidth:'50%'}]});
+
+// Chart 3: fees
+var c3=echarts.init(document.getElementById('c3'));
+c3.setOption({grid:{top:10,right:10,bottom:20,left:45},xAxis:{type:'category',data:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],axisLabel:{color:'#94a3b8',fontSize:10}},yAxis:{type:'value',axisLabel:{color:'#94a3b8',fontSize:10}},series:[{data:Array.from({length:7},()=>rand(500,3000)),type:'bar',itemStyle:{color:'#f59e0b',borderRadius:[4,4,0,0]},barWidth:'50%'}]});
+
+// Chart 4: time distribution
+var c4=echarts.init(document.getElementById('c4'));
+c4.setOption({tooltip:{trigger:'item'},series:[{type:'pie',radius:['40%','70%'],center:['50%','55%'],data:[{value:rand(200,500),name:'0-1h'},{value:rand(300,800),name:'1-2h'},{value:rand(200,600),name:'2-3h'},{value:rand(100,300),name:'3-4h'},{value:rand(50,150),name:'4h+'}],label:{color:'#94a3b8',fontSize:10},itemStyle:{borderColor:'#111827',borderWidth:2}}]});
+
+// Chart 5: temperature
+var c5=echarts.init(document.getElementById('c5'));
+fetch('/api/v1/voltage_current').then(r=>r.json()).then(d=>{
+  var temps=d.map(()=>rand(25,45));
+  c5.setOption({grid:{top:10,right:10,bottom:20,left:40},xAxis:{type:'category',data:temps.map((_,i)=>i),axisLabel:{color:'#94a3b8',fontSize:10}},yAxis:{type:'value',axisLabel:{color:'#94a3b8',fontSize:10}},series:[{data:temps,type:'line',smooth:true,lineStyle:{color:'#ef4444',width:2},areaStyle:{color:{type:'linear',x:0,y:0,x2:0,y2:1,colorStops:[{offset:0,color:'rgba(239,68,68,.3)'},{offset:1,color:'rgba(239,68,68,0)'}]}},symbol:'none'}]});
+});
+
+// Total sessions
+setInterval(function(){
+  document.getElementById('totalSession').textContent=Math.floor(rand(1200,1800));
+},3000);
+document.getElementById('totalSession').textContent=Math.floor(rand(1200,1800));
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cqupt.mapper.StatisticsMapper">
+
+    <resultMap id="statisticsResultMap" type="com.cqupt.pojo.Statistics">
+        <id column="s_id" property="id"/>
+        <result column="s_province_id" property="provinceId"/>
+        <result column="s_city_id" property="cityId"/>
+        <result column="s_address" property="address"/>
+        <result column="s_so2_value" property="so2Value"/>
+        <result column="s_so2_level" property="so2Level"/>
+        <result column="s_co_value" property="coValue"/>
+        <result column="s_co_level" property="coLevel"/>
+        <result column="s_spm_value" property="spmValue"/>
+        <result column="s_spm_level" property="spmLevel"/>
+        <result column="s_aqi_id" property="aqiId"/>
+        <result column="s_confirm_date" property="confirmDate"/>
+        <result column="s_confirm_time" property="confirmTime"/>
+        <result column="s_gm_id" property="gmId"/>
+        <result column="s_fd_id" property="fdId"/>
+        <result column="s_information" property="information"/>
+        <result column="s_remarks" property="remarks"/>
+
+        <association property="gridProvince" javaType="com.cqupt.pojo.GridProvince">
+            <id column="gp_province_id" property="provinceId"/>
+            <result column="gp_province_name" property="provinceName"/>
+            <result column="gp_province_abbr" property="provinceAbbr"/>
+        </association>
+        <association property="gridCity" javaType="com.cqupt.pojo.GridCity">
+            <id column="gc_city_id" property="cityId"/>
+            <result column="gc_city_name" property="cityName"/>
+            <result column="gc_province_id" property="provinceId"/>
+        </association>
+        <association property="aqi" javaType="com.cqupt.pojo.Aqi">
+            <id column="aq_aqi_id" property="aqiId"/>
+            <result column="aq_chinese_explain" property="chineseExplain"/>
+            <result column="aq_aqi_explain" property="aqiExplain"/>
+            <result column="aq_color" property="color"/>
+            <result column="aq_health_impact" property="healthImpact"/>
+            <result column="aq_take_steps" property="takeSteps"/>
+            <result column="aq_so2_min" property="so2Min"/>
+            <result column="aq_so2_max" property="so2Max"/>
+            <result column="aq_co_min" property="coMin"/>
+            <result column="aq_co_max" property="coMax"/>
+            <result column="aq_spm_min" property="spmMin"/>
+            <result column="aq_spm_max" property="spmMax"/>
+        </association>
+        <association property="gridMember" javaType="com.cqupt.pojo.GridMember">
+            <id column="gm_gm_id" property="gmId"/>
+            <result column="gm_gm_name" property="gmName"/>
+            <result column="gm_gm_code" property="gmCode"/>
+            <result column="gm_password" property="password"/>
+            <result column="gm_province_id" property="provinceId"/>
+            <result column="gm_city_id" property="cityId"/>
+            <result column="gm_tel" property="tel"/>
+            <result column="gm_state" property="state"/>
+        </association>
+    </resultMap>
+
+    <select id="getStatisticsCount" resultType="int">
+        SELECT COUNT(1) FROM statistics
+        <where>
+            <if test="provinceId != null">AND province_id = #{provinceId}</if>
+            <if test="cityId != null">AND city_id = #{cityId}</if>
+            <if test="confirmDate != null and confirmDate != ''">AND confirm_date LIKE CONCAT('%',#{confirmDate},'%')</if>
+        </where>
+    </select>
+
+    <select id="listStatisticsPage" resultMap="statisticsResultMap">
+        SELECT
+        s.id             AS s_id,
+        s.province_id    AS s_province_id,
+        s.city_id        AS s_city_id,
+        s.address        AS s_address,
+        s.so2_value      AS s_so2_value,
+        s.so2_level      AS s_so2_level,
+        s.co_value       AS s_co_value,
+        s.co_level       AS s_co_level,
+        s.spm_value      AS s_spm_value,
+        s.spm_level      AS s_spm_level,
+        s.aqi_id         AS s_aqi_id,
+        s.confirm_date   AS s_confirm_date,
+        s.confirm_time   AS s_confirm_time,
+        s.gm_id          AS s_gm_id,
+        s.fd_id          AS s_fd_id,
+        s.information    AS s_information,
+        s.remarks        AS s_remarks,
+
+        gp.province_id   AS gp_province_id,
+        gp.province_name AS gp_province_name,
+        gp.province_abbr AS gp_province_abbr,
+
+        gc.city_id       AS gc_city_id,
+        gc.city_name     AS gc_city_name,
+        gc.province_id   AS gc_province_id,
+
+        aq.aqi_id          AS aq_aqi_id,
+        aq.chinese_explain AS aq_chinese_explain,
+        aq.aqi_explain     AS aq_aqi_explain,
+        aq.color           AS aq_color,
+        aq.health_impact   AS aq_health_impact,
+        aq.take_steps      AS aq_take_steps,
+        aq.so2_min         AS aq_so2_min,
+        aq.so2_max         AS aq_so2_max,
+        aq.co_min          AS aq_co_min,
+        aq.co_max          AS aq_co_max,
+        aq.spm_min         AS aq_spm_min,
+        aq.spm_max         AS aq_spm_max,
+
+        gm.gm_id        AS gm_gm_id,
+        gm.gm_name      AS gm_gm_name,
+        gm.gm_code      AS gm_gm_code,
+        gm.password     AS gm_password,
+        gm.province_id  AS gm_province_id,
+        gm.city_id      AS gm_city_id,
+        gm.tel          AS gm_tel,
+        gm.state        AS gm_state
+        FROM statistics s
+        INNER JOIN grid_province gp ON s.province_id = gp.province_id
+        INNER JOIN grid_city gc ON s.city_id = gc.city_id
+        INNER JOIN aqi aq ON s.aqi_id = aq.aqi_id
+        LEFT JOIN grid_member gm ON s.gm_id = gm.gm_id
+        <where>
+            <if test="provinceId != null">AND s.province_id = #{provinceId}</if>
+            <if test="cityId != null">AND s.city_id = #{cityId}</if>
+            <if test="confirmDate != null and confirmDate != ''">AND s.confirm_date LIKE CONCAT('%',#{confirmDate},'%')</if>
+        </where>
+        ORDER BY s.id DESC
+        LIMIT #{beginNum},#{maxPageNum}
+    </select>
+
+    <select id="listProvinceItemTotalStatis" resultType="com.cqupt.dto.ProvinceItemTotalStatisDto">
+        SELECT
+            gp.province_id AS provinceId,
+            gp.province_abbr AS provinceAbbr,
+            gp.province_name AS provinceName,
+            IFNULL(SUM(s.so2_value),0) AS so2Total,
+            IFNULL(SUM(s.co_value),0) AS coTotal,
+            IFNULL(SUM(s.spm_value),0) AS spmTotal,
+            COUNT(s.id) AS aqiTotal
+        FROM grid_province gp
+                 LEFT JOIN statistics s ON gp.province_id = s.province_id
+        GROUP BY gp.province_id,gp.province_abbr,gp.province_name
+    </select>
+
+    <select id="listAqiDistributeTotalStatis" resultType="com.cqupt.dto.AqiDistributeTotalStatisDto">
+        SELECT
+            a.aqi_id AS aqiId,
+            a.aqi_explain AS aqiExplain,
+            COUNT(s.id) AS total
+        FROM aqi a
+                 LEFT JOIN statistics s ON a.aqi_id = s.aqi_id
+        GROUP BY a.aqi_id,a.aqi_explain
+    </select>
+
+    <select id="listAqiTrendTotalStatis" resultType="com.cqupt.dto.AqiTrendTotalStatisDto">
+        SELECT
+        t.month,
+        IFNULL(COUNT(s.id),0) AS total
+        FROM
+        (
+        <foreach collection="list" item="item" separator="UNION ALL">
+            SELECT #{item.month} AS month
+        </foreach>
+        ) t
+        LEFT JOIN statistics s ON DATE_FORMAT(s.confirm_date,'%Y-%m') = t.month
+        GROUP BY t.month
+        ORDER BY t.month ASC
+    </select>
+
+    <select id="countDistinctProvince" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT province_id) FROM statistics
+    </select>
+
+    <select id="countDistinctCity" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT city_id) FROM statistics
+    </select>
+</mapper>

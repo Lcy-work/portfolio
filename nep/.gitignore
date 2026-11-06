@@ -1,0 +1,10 @@
+# Java
+target/
+*.class
+.idea/
+*.iml
+backups/
+
+# Vue / Node
+node_modules/
+dist/

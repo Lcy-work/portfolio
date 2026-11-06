@@ -1,0 +1,39 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /nepm
+  error:
+    include-stacktrace: always
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/nep_db?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&connectionCollation=utf8mb4_unicode_ci&createDatabaseIfNotExist=true
+    username: root
+    password: 123456
+
+# 全局数据，省份和对应城市的数量
+global-data:
+  province-number: 34
+  city-number: 106
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.cqupt.pojo,com.cqupt.dto
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: 'com.cqupt'

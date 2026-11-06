@@ -1,0 +1,19 @@
+# 数据集根目录（相对于 train.py 运行目录：D:\ultralytics-main）
+path: datasets/BVN
+
+# 训练/验证集路径（相对于上面的 path，必须是 images/train / images/val）
+train: images/train
+val: images/val
+test:
+
+# 类别数量（6个英雄，和 classes.txt 完全一致）
+nc: 6
+
+# 类别名称（顺序必须和 classes.txt 完全一致！）
+names:
+  0: 牛魔
+  1: 刘禅
+  2: 吕布
+  3: 马可波罗
+  4: 小乔
+  5: 元流之子
